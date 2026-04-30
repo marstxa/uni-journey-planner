@@ -18,30 +18,6 @@ public class MetrolinkDijkstra {
         }
     }
 
-    static class RouteState implements Comparable<RouteState> {
-
-        String station;
-        String line; // line used to arrive to this station
-        double totalCost; // Renamed since time changes based on the method selected - time taken to get here so far
-        double actualTime; // The actual time taken for the final output
-        RouteState previous; // To reconstruct path backward if needed
-        int changes; // Number of line changes made
-
-        public RouteState(String station, String line, double totalCost, double actualTime, int changes, RouteState previous) {
-            this.station = station;
-            this.line = line;
-            this.totalCost = totalCost;
-            this.actualTime = actualTime;
-            this.changes = changes;
-            this.previous = previous;
-        }
-
-        @Override // for safety
-        public int compareTo(RouteState other) {
-            return Double.compare(this.totalCost, other.totalCost);
-        }
-    }
-
     // Graph that maps a station name to a list of connections
     private final Map<String, List<Connection>> network = new HashMap<>();
 
