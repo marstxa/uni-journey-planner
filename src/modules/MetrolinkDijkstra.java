@@ -22,19 +22,23 @@ public class MetrolinkDijkstra {
 
         String station;
         String line; // line used to arrive to this station
-        double totalTime; // time taken to get here so far
+        double totalCost; // Renamed since time changes based on the method selected - time taken to get here so far
+        double actualTime; // The actual time taken for the final output
         RouteState previous; // To reconstruct path backward if needed
+        int changes; // Number of line changes made
 
-        public RouteState(String station, String line, double totalTime, RouteState previous) {
+        public RouteState(String station, String line, double totalCost, double actualTime, int changes, RouteState previous) {
             this.station = station;
             this.line = line;
-            this.totalTime = totalTime;
+            this.totalCost = totalCost;
+            this.actualTime = actualTime;
+            this.changes = changes;
             this.previous = previous;
         }
 
         @Override // for safety
         public int compareTo(RouteState other) {
-            return Double.compare(this.totalTime, other.totalTime);
+            return Double.compare(this.totalCost, other.totalCost);
         }
     }
 
@@ -51,15 +55,17 @@ public class MetrolinkDijkstra {
     }
 
     // Pathfinding algorithm
-    public void findShortestRoute(String startstation, String endStation) {
+    // Since i have to allow the users to decide wether they want the fastest route or the one with least changes
+    // Added a new parameter for fewest changes
+    public void findShortestRoute(String startstation, String endStation, boolean optimisedRoute) {
         PriorityQueue<RouteState> queue = new PriorityQueue<>();
 
         // Tracks minimum time to reach a station + line
         // allows the algorithm to visit a station twice if its on a different line or we have to backtrack
-        Map<String, Double> minTimes = new HashMap<>();
+        Map<String, Double> minCost = new HashMap<>();
 
         // Start with - time and 0 line
-        queue.add(new RouteState(startstation, null, 0.0, null));
+        queue.add(new RouteState(startstation, null, 0.0, 0.0, 0, null));
 
         RouteState finalState = null;
 
@@ -75,19 +81,31 @@ public class MetrolinkDijkstra {
             // Check neigbouring stations
             for (Connection conn : network.getOrDefault(current.station, new ArrayList<>())) {
                 double travelTime = conn.time;
+                int newChanges = current.changes;
 
                 // add penalty for change, (TEST)
                 if (current.line != null && !current.line.equals(conn.line)) {
                     travelTime += 2.0; //TODO: Change 
+                    newChanges++;
                 }
 
-                double newTotalTime = current.totalTime + travelTime;
+                double newActualTime = current.actualTime + travelTime;
+                double newTotalCost;
+
+                // Calculate cost to determine if its optimised or not
+                if (optimisedRoute) {
+                    newTotalCost = newActualTime;
+                } else {
+                    // break ties happening if two routes have 0 changes
+                    newTotalCost = newChanges;
+                }
+
                 String stateKey = conn.destination + "_" + conn.line;
 
                 // if this is the fastest way we found for this station-line
-                if (newTotalTime < minTimes.getOrDefault(stateKey, Double.MAX_VALUE)) {
-                    minTimes.put(stateKey, newTotalTime);
-                    queue.add(new RouteState(conn.destination, conn.line, newTotalTime, current));
+                if (newTotalCost < minCost.getOrDefault(stateKey, Double.MAX_VALUE)) {
+                    minCost.put(stateKey, newTotalCost);
+                    queue.add(new RouteState(conn.destination, conn.line, newTotalCost, newActualTime, newChanges, current));
                 }
             }
         }
@@ -96,11 +114,17 @@ public class MetrolinkDijkstra {
         if (finalState == null) {
             System.out.println("No route could be found");
         } else {
-            printFormattedRoute(finalState);
+            printFormattedRoute(finalState, optimisedRoute);
         }
     }
 
-    private void printFormattedRoute(RouteState endState) {
+    private void printFormattedRoute(RouteState endState, boolean optimisedRoute) {
+        if (optimisedRoute) {
+            System.err.println("\n*** Minimal Time Route ***");
+        } else {
+            System.out.println("\n*** Route with the Fewest Changes ***");
+        }
+
         // Reconstruct the path backwards
         List<RouteState> path = new ArrayList<>();
         RouteState curr = endState;
@@ -122,9 +146,12 @@ public class MetrolinkDijkstra {
             // Check if we changed lines
             if (!step.line.equals(currentLine)) {
                 System.out.println("** Change Line to " + step.line + " line***");
+                System.out.println(path.get(i - 1).station + " on " + step.line + " line");
+                currentLine = step.line;
             }
-            System.out.println(path.get(i - 1).station + " on " + step.line + " line");
+            System.out.println(step.station + " on " + step.line + " line");
         }
-        System.out.println("Overall Journey Time (mins) =" + endState.totalTime);
+        System.out.println("Overall Journey Time (mins) =" + endState.actualTime);
+        System.out.println("Total changes: " + endState.changes);
     }
 }

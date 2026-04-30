@@ -27,13 +27,14 @@ public class GetJourney {
         // Get user input
         String startStation = getValidStation(scanner, "Enter your starting station: ", validStations);
         String endStation = getValidStation(scanner, "Enter your destination station: ", validStations);
+        boolean optimisedRoute = getOptimisedInput(scanner);
 
         // Output for testing
         System.out.println("\nPlanning route...");
         System.out.println("From: " + startStation);
-        System.out.println("To: " + endStation + "...\n");
+        System.out.println("To: " + endStation);
 
-        planner.findShortestRoute(startStation, endStation); // task 3
+        planner.findShortestRoute(startStation, endStation, optimisedRoute);
 
         scanner.close();
     }
@@ -53,6 +54,26 @@ public class GetJourney {
 
             // If station is invalid
             System.out.println("  [Error] '" + input + "' is not a recognized Metrolink station. Please try again.\n");
+        }
+    }
+
+    // handles user preference for choosing the optimisedRoute method 
+    private static boolean getOptimisedInput(Scanner scanner) {
+        while (true) {
+            System.out.println("\nHow would you like to travel?");
+            System.out.println(" 1. Shortest Time");
+            System.out.println(" 2. Fewest Changes");
+            System.out.print("Please choose 1 or 2: ");
+
+            String input = scanner.nextLine().trim();
+
+            if (input.equals("1")) {
+                return true;
+            } else if (input.equals("2")) {
+                return false;
+            } else {
+                System.out.println("[Error] Invalid choice. \nPlease eneter 1 or 2.");
+            }
         }
     }
 }
