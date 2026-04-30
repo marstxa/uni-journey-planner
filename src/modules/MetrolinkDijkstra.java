@@ -1,10 +1,6 @@
+package modules;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.PriorityQueue;
+import java.util.*;
 
 public class MetrolinkDijkstra {
 
@@ -30,7 +26,6 @@ public class MetrolinkDijkstra {
         RouteState previous; // To reconstruct path backward if needed
 
         public RouteState(String station, String line, double totalTime, RouteState previous) {
-
             this.station = station;
             this.line = line;
             this.totalTime = totalTime;
@@ -83,7 +78,7 @@ public class MetrolinkDijkstra {
 
                 // add penalty for change, (TEST)
                 if (current.line != null && !current.line.equals(conn.line)) {
-                    travelTime += 2.0;
+                    travelTime += 2.0; //TODO: Change 
                 }
 
                 double newTotalTime = current.totalTime + travelTime;

@@ -1,19 +1,14 @@
+package modules;
 
-import java.util.HashSet;
 import java.util.Scanner;
 import java.util.Set;
 
 public class GetJourney {
-    public static void main(String[] args) {
 
-        // List of valid stations
-        Set<String> validStations = new HashSet<>();
-
-        // TODO: Read scv to import list of stations, empty for now
-        validStations.add("Lancaster"); // test
+    public static void start(MetrolinkDijkstra planner, Set<String> validStations) {
 
         Scanner scanner = new Scanner(System.in);
-        
+
         // CLI Welcome Screen
         System.out.println("                 _-====-__-======-__-========-_____-============-__");
         System.out.println("               _(   WELCOME TO THE MANCHESTER METROLINK PLANNER   _)");
@@ -30,26 +25,28 @@ public class GetJourney {
         System.out.println();
 
         // Get user input
-        String startStation = getValidStation(scanner, "Enter your starting station: ",validStations);
+        String startStation = getValidStation(scanner, "Enter your starting station: ", validStations);
         String endStation = getValidStation(scanner, "Enter your destination station: ", validStations);
 
         // Output for testing
         System.out.println("\nPlanning route...");
         System.out.println("From: " + startStation);
-        System.out.println("To: " + endStation);
+        System.out.println("To: " + endStation + "...\n");
+
+        planner.findShortestRoute(startStation, endStation); // task 3
 
         scanner.close();
     }
 
-    private static String getValidStation(Scanner scanner, String prompt, Set<String> validStations){
-        while (true){
+    private static String getValidStation(Scanner scanner, String prompt, Set<String> validStations) {
+        while (true) {
             System.out.print(prompt);
             String input = scanner.nextLine().trim();
 
             // Check if input exists in the list of valid stations
             // Used for loop to make it case-insensitive for better ux
-            for (String station: validStations){
-                if (station.equalsIgnoreCase(input)){
+            for (String station : validStations) {
+                if (station.equalsIgnoreCase(input)) {
                     return station; // Return station capitalised
                 }
             }
