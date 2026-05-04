@@ -54,7 +54,7 @@ public class GetJourney {
             }
 
             // If station is invalid
-            System.out.println("  [Error] '" + input + "' is not a recognisrecognized Med Metrolink station. Please try again.\n");
+            System.out.println("[Error] '" + input + "' is not a recognised Metrolink station. Please try again.\n");
         }
     }
 
@@ -116,7 +116,7 @@ public class GetJourney {
         System.out.println("Are there any delays between two stations?");
 
         while (true) {
-            System.out.println("Enter Start Station for delay: (press Enter to skip)"); // get start
+            System.out.println("\nEnter Start Station for delay: (press Enter to skip)"); // get start
             String startInput = scanner.nextLine().trim();
 
             if (startInput.isEmpty()) { // allows user to skip preference if not needed
@@ -130,7 +130,7 @@ public class GetJourney {
                 continue;
             }
 
-            System.out.print("Enter End Station for delay: "); // get end 
+            System.out.println("\nEnter End Station for delay: "); // get end 
             String endInput = scanner.nextLine().trim();
             String endStation = validateString(endInput, validStations);
 
@@ -140,7 +140,7 @@ public class GetJourney {
             }
 
             // Allow user to enter a specified amount of time for delays it must be a double
-            System.out.println("Enter the NEW total travel time (in mins) between " + startInput + " and " + endStation);
+            System.out.println("\nEnter the NEW total travel time (in mins) between " + startInput + " and " + endStation);
             try {
                 double newTime = Double.parseDouble(scanner.nextLine().trim());
                 graph.addDelay(startStation, endStation, newTime);

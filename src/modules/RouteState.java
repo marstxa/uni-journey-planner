@@ -20,6 +20,13 @@ public class RouteState implements Comparable<RouteState> {
 
     @Override // for safety
     public int compareTo(RouteState other) {
-        return Double.compare(this.totalCost, other.totalCost);
+        int costCompare = Double.compare(this.totalCost, other.totalCost);
+
+        // tie breaker, if we have two routes with the same cost
+        if (costCompare == 0) {
+            return Double.compare(this.actualTime, other.actualTime);
+        }
+
+        return costCompare;
     }
 }
