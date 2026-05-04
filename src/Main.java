@@ -2,23 +2,22 @@
 import java.util.HashSet;
 import java.util.Set;
 import modules.GetJourney;
-import modules.MetrolinkDijkstra;
+import modules.MetrolinkGraph;
 import modules.ReadMap;
 
 public class Main {
 
     public static void main(String[] args) {
-        // Initialise planner
-        MetrolinkDijkstra planner = new MetrolinkDijkstra();
+        // Initialise data structures
+        MetrolinkGraph graph = new MetrolinkGraph();
+        Set<String> validStations = new HashSet<>(); // hold valid stations in a set
 
-        // hold valid stations in set
-        Set<String> validStations = new HashSet<>();
-
-        //path to csv 
+        // Load all data from CSVs 
         String csvPath = "src/utils/Metrolink_times_linecolour(in).csv";
+        ReadMap.loadMapData(csvPath, graph, validStations); // load data and get a set of valid stations
 
-        // load data and get a set of valid stations
-        ReadMap.loadMapData(csvPath, planner, validStations);
+        String walkPath = "src/utils/walktimes(in).csv";
+        ReadMap.loadWalkData(walkPath, graph);
 
         if (validStations.isEmpty()) {
             System.err.println("[Error] No stations were loaded. Please check the CSV file");
@@ -26,6 +25,6 @@ public class Main {
         }
 
         // Call interface
-        GetJourney.start(planner, validStations);
+        GetJourney.start(graph, validStations);
     }
 }

@@ -5,7 +5,7 @@ import java.util.Set;
 
 public class GetJourney {
 
-    public static void start(MetrolinkDijkstra planner, Set<String> validStations) {
+    public static void start(MetrolinkGraph graph, Set<String> validStations) {
 
         Scanner scanner = new Scanner(System.in);
 
@@ -29,12 +29,13 @@ public class GetJourney {
         String endStation = getValidStation(scanner, "Enter your destination station: ", validStations);
         boolean optimisedRoute = getOptimisedInput(scanner);
 
+        closeStations(scanner, graph, validStations);
+        addDelays(scanner, graph, validStations);
+
         // Output for testing
         System.out.println("\nPlanning route...");
-        System.out.println("From: " + startStation);
-        System.out.println("To: " + endStation);
-
-        planner.findShortestRoute(startStation, endStation, optimisedRoute);
+        RouteState finalState = MetrolinkDijkstra.findShortestRoute(graph, startStation, endStation, optimisedRoute);
+        RouteFormatter.printRoute(finalState, optimisedRoute);
 
         scanner.close();
     }
@@ -53,7 +54,7 @@ public class GetJourney {
             }
 
             // If station is invalid
-            System.out.println("  [Error] '" + input + "' is not a recognized Metrolink station. Please try again.\n");
+            System.out.println("  [Error] '" + input + "' is not a recognisrecognized Med Metrolink station. Please try again.\n");
         }
     }
 
@@ -76,4 +77,79 @@ public class GetJourney {
             }
         }
     }
+
+    // ignores capital sensitive cases
+    private static String validateString(String input, Set<String> validStations) {
+        for (String station : validStations) {
+            if (station.equalsIgnoreCase(input)) {
+                return station;
+            }
+        }
+        return null;
+    }
+
+    private static void closeStations(Scanner scanner, MetrolinkGraph graph, Set<String> validStations) {
+        System.out.println("\n*** Station Closures ***");
+        System.out.println("Are there any stations closed today?");
+
+        while (true) {
+            System.out.println("Enter closed station name (press Enter to skip)");
+            String input = scanner.nextLine().trim();
+
+            if (input.isEmpty()) { // allows user to skip preference if not needed
+                break;
+            }
+
+            String validStation = validateString(input, validStations);
+
+            if (validStation != null) {
+                graph.closeStation(validStation);
+                System.out.println("[System]" + validStation + " is now CLOSED.");
+            } else {
+                System.out.println("[Error] Unkown station.");
+            }
+        }
+    }
+
+    private static void addDelays(Scanner scanner, MetrolinkGraph graph, Set<String> validStations) {
+        System.out.println("\n*** Line Delays ***");
+        System.out.println("Are there any delays between two stations?");
+
+        while (true) {
+            System.out.println("Enter Start Station for delay: (press Enter to skip)"); // get start
+            String startInput = scanner.nextLine().trim();
+
+            if (startInput.isEmpty()) { // allows user to skip preference if not needed
+                break;
+            }
+
+            String startStation = validateString(startInput, validStations);
+
+            if (startStation == null) {
+                System.out.println("[Error] Unkown station.");
+                continue;
+            }
+
+            System.out.print("Enter End Station for delay: "); // get end 
+            String endInput = scanner.nextLine().trim();
+            String endStation = validateString(endInput, validStations);
+
+            if (endStation == null) {
+                System.out.println("[Error] Unkown station.");
+                continue;
+            }
+
+            // Allow user to enter a specified amount of time for delays it must be a double
+            System.out.println("Enter the NEW total travel time (in mins) between " + startInput + " and " + endStation);
+            try {
+                double newTime = Double.parseDouble(scanner.nextLine().trim());
+                graph.addDelay(startStation, endStation, newTime);
+
+                System.out.println("[System] Delay logged. New time is " + newTime + " mins.");
+            } catch (NumberFormatException e) {
+                System.out.println("[Error] Invalid number. Delay not added.");
+            }
+        }
+    }
+
 }
