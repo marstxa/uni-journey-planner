@@ -75,48 +75,6 @@ public class MetrolinkDijkstra {
             }
         }
 
-        // Print output
-        if (finalState == null) {
-            System.out.println("No route could be found");
-        } else {
-            printFormattedRoute(finalState, optimisedRoute);
-        }
-    }
-
-    private void printFormattedRoute(RouteState endState, boolean optimisedRoute) {
-        if (optimisedRoute) {
-            System.err.println("\n*** Minimal Time Route ***");
-        } else {
-            System.out.println("\n*** Route with the Fewest Changes ***");
-        }
-
-        // Reconstruct the path backwards
-        List<RouteState> path = new ArrayList<>();
-        RouteState curr = endState;
-
-        while (curr != null) {
-            path.add(curr);
-            curr = curr.previous;
-        }
-        Collections.reverse(path); // Start -> End
-
-        String currentLine = path.get(1).line; // The line we take from the start station
-
-        // Print start station
-        System.out.println(path.get(0).station + " on " + currentLine + " line");
-
-        for (int i = 1; i < path.size(); i++) {
-            RouteState step = path.get(i);
-
-            // Check if we changed lines
-            if (!step.line.equals(currentLine)) {
-                System.out.println("** Change Line to " + step.line + " line***");
-                System.out.println(path.get(i - 1).station + " on " + step.line + " line");
-                currentLine = step.line;
-            }
-            System.out.println(step.station + " on " + step.line + " line");
-        }
-        System.out.println("Overall Journey Time (mins) =" + endState.actualTime);
-        System.out.println("Total changes: " + endState.changes);
+        return null;
     }
 }
