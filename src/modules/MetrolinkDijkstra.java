@@ -4,36 +4,22 @@ import java.util.*;
 
 public class MetrolinkDijkstra {
 
-    // core data structure
-    static class Connection {
-
-        String destination;
-        String line;
-        double time;
-
-        public Connection(String destination, String line, double time) {
-            this.destination = destination;
-            this.line = line;
-            this.time = time;
-        }
-    }
-
-    // Graph that maps a station name to a list of connections
-    private final Map<String, List<Connection>> network = new HashMap<>();
-
-    public void addConnection(String from, String to, String line, double time) {
-        network.putIfAbsent(from, new ArrayList<>());
-        network.putIfAbsent(to, new ArrayList<>());
-
-        // Add two way connection
-        network.get(from).add(new Connection(to, line, time));
-        network.get(to).add(new Connection(from, line, time));
-    }
-
     // Pathfinding algorithm
     // Since i have to allow the users to decide wether they want the fastest route or the one with least changes
     // Added a new parameter for fewest changes
-    public void findShortestRoute(String startstation, String endStation, boolean optimisedRoute) {
+    public static RouteState findShortestRoute(MetrolinkGraph graph, String startStation, String endStation, boolean optimisedRoute) {
+
+        // Dont start if the start or end is closed
+        if (graph.isClosed(startStation)) {
+            System.out.println("\n[Error] The start station is currently closed");
+            return null;
+        }
+
+        if (graph.isClosed(endStation)) {
+            System.out.println("\n [Error] THe end station is currently closed");
+            return null;
+        }
+
         PriorityQueue<RouteState> queue = new PriorityQueue<>();
 
         // Tracks minimum time to reach a station + line
@@ -41,7 +27,7 @@ public class MetrolinkDijkstra {
         Map<String, Double> minCost = new HashMap<>();
 
         // Start with - time and 0 line
-        queue.add(new RouteState(startstation, null, 0.0, 0.0, 0, null));
+        queue.add(new RouteState(startStation, null, 0.0, 0.0, 0, null));
 
         RouteState finalState = null;
 
@@ -50,13 +36,16 @@ public class MetrolinkDijkstra {
 
             // Break condition = we found the fastest route
             if (current.station.equals(endStation)) {
-                finalState = current;
-                break;
+                return current;
             }
 
             // Check neigbouring stations
-            for (Connection conn : network.getOrDefault(current.station, new ArrayList<>())) {
-                double travelTime = conn.time;
+            for (MetrolinkGraph.Connection conn : graph.getConnections(current.station)) {
+                if (graph.isClosed(conn.destination)) {
+                    continue; // changed to skip closed stations
+                }
+
+                double travelTime = graph.getActualTime(current.station, conn.destination, conn.time); // get actual time 
                 int newChanges = current.changes;
 
                 // add penalty for change, (TEST)
